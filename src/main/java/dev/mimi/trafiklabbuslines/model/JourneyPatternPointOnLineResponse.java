@@ -1,15 +1,17 @@
 package dev.mimi.trafiklabbuslines.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record JourneyPatternPointOnLineResponse(ResponseData ResponseData) {
-    public record ResponseData(String Type, List<JourneyPatternPointOnLine> Result) {
+public record JourneyPatternPointOnLineResponse(@JsonProperty("ResponseData") ResponseData responseData) {
+    public record ResponseData(@JsonProperty("Type") String type,
+                               @JsonProperty("Result") List<JourneyPatternPointOnLine> result) {
         public record JourneyPatternPointOnLine(
-                int LineNumber,
-                int JourneyPatternPointNumber
+                @JsonProperty("LineNumber") int lineNumber,
+                @JsonProperty("JourneyPatternPointNumber") int journeyPatternPointNumber
         ) {}
     }
 }

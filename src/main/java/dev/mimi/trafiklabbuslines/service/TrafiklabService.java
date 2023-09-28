@@ -1,8 +1,6 @@
 package dev.mimi.trafiklabbuslines.service;
 
 import dev.mimi.trafiklabbuslines.model.JourneyPatternPointOnLineResponse;
-import dev.mimi.trafiklabbuslines.model.Line;
-import dev.mimi.trafiklabbuslines.model.StopPointResponse;
 import dev.mimi.trafiklabbuslines.model.StopPointResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,28 +43,6 @@ public class TrafiklabService {
         return lineStopsMapEntriesArrayList.subList(0, Math.min(lineStopsMapEntriesArrayList.size(), 10));
     }
 
-    public List<Line> retrieveLines() {
-        List<Line> linesArrayList = null;
-        ResponseEntity<List<Line>> lineListResponse = trafiklabWebClient.get()
-                .uri(uriBuilder -> uriBuilder.queryParam("key", trafiklabKey)
-                        .queryParam("model", "line")
-                        .queryParam("DefaultTransportModeCode", transportModeCode)
-                        .build())
-                .retrieve()
-                .toEntityList(Line.class)
-                .block();
-         HttpStatusCode statusCode = lineListResponse.getStatusCode();
-         if(statusCode.is2xxSuccessful()) {
-             linesArrayList = lineListResponse.getBody();
-         } else {
-             log.error("Bus lines could not be retrieved. Status code: {}, Error message: {}",
-                     lineListResponse.getStatusCode(),
-                     lineListResponse.getBody());
-             exit(1);
-         }
-         return linesArrayList;
-    }
-
     public Map<Integer, List<Integer>> retrieveJourneyPatternPointOnLines() {
         Map<Integer, List<Integer>> journeyPatternPointOnLineHashMap = null;
         ResponseEntity<JourneyPatternPointOnLineResponse> journeyPatternPointOnLineListResponse = trafiklabWebClient.get()
@@ -81,12 +57,12 @@ public class TrafiklabService {
         HttpStatusCode statusCode = journeyPatternPointOnLineListResponse.getStatusCode();
         if(statusCode.is2xxSuccessful()) {
             log.info("journeyPatternPointOnLineListResponse.getBody().size() = {}", journeyPatternPointOnLineListResponse
-                    .getBody().ResponseData().Result().size());
+                    .getBody().responseData().result().size());
             journeyPatternPointOnLineHashMap = journeyPatternPointOnLineListResponse
-                    .getBody().ResponseData().Result()
+                    .getBody().responseData().result()
                     .stream()
-                    .collect(Collectors.toMap(entity -> entity.LineNumber(),
-                            entity -> Collections.singletonList(entity.JourneyPatternPointNumber()),
+                    .collect(Collectors.toMap(entity -> entity.lineNumber(),
+                            entity -> Collections.singletonList(entity.journeyPatternPointNumber()),
                             (existingList, newList) -> {
                                 List<Integer> mergedList = new ArrayList<>(existingList);
                                 mergedList.addAll(newList);
@@ -115,9 +91,9 @@ public class TrafiklabService {
         HttpStatusCode statusCode = stopPointListResponse.getStatusCode();
         if(statusCode.is2xxSuccessful()) {
             stopPointHashMap = stopPointListResponse
-                    .getBody().ResponseData().Result()
+                    .getBody().responseData().result()
                     .stream()
-                    .collect(Collectors.toMap(entity -> entity.StopPointNumber(), entity -> entity.StopPointName()));
+                    .collect(Collectors.toMap(entity -> entity.stopPointNumber(), entity -> entity.stopPointName()));
         } else {
             log.error("Stop points could not be retrieved. Status code: {}, Error message: {}",
                     stopPointListResponse.getStatusCode(),
