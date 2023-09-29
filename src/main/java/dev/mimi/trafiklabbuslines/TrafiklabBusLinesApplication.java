@@ -34,16 +34,19 @@ public class TrafiklabBusLinesApplication
 			log.info("args[{}]: {}", i, args[i]);
 		}
 
-		List<Map.Entry<Integer, List<Integer>>> top10Lines = trafiklabService.getTopTenLongestLines();
-		log.info("Top 1 -> Line number: " + top10Lines.get(0).getKey().toString() + " -> " + printStopPointNames(top10Lines.get(0).getValue()));
+		List<Map.Entry<Integer, List<Integer>>> top10Lines = trafiklabService.findTopTenLongestLines();
+		Map<Integer, String> stopPointsMap = trafiklabService.retrieveStopPoints();
+		log.info("Printing result...");
+		log.info("Top 1 -> Line number: " + top10Lines.get(0).getKey().toString() + " -> " +
+				printStopPointNames(top10Lines.get(0).getValue(), stopPointsMap));
 		for(int i = 1; i < top10Lines.size(); i++) {
-			log.info("Top " + (i + 1) + " -> Line number: " + top10Lines.get(i).getKey().toString() + " - > Number of stops: " + top10Lines.get(i).getValue().size());
+			log.info("Top " + (i + 1) + " -> Line number: " + top10Lines.get(i).getKey().toString());
 		}
 	}
 
-	public String printStopPointNames(List<Integer> stopPointNumbersList) {
+	public String printStopPointNames(List<Integer> stopPointNumbersList, Map<Integer, String> stopPointsMap) {
 		StringBuilder output = new StringBuilder("[Bus stops: ");
-		Map<Integer, String> stopPointsMap = trafiklabService.retrieveStopPoints();
+
 		for(Integer number: stopPointNumbersList) {
 			output.append(stopPointsMap.get(number) + ", ");
 		}

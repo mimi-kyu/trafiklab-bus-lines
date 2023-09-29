@@ -32,11 +32,9 @@ public class TrafiklabService {
         this.transportModeCode = transportModeCode;
     }
 
-    public List<Map.Entry<Integer, List<Integer>>> getTopTenLongestLines() {
-        return findTopTenLongestLines(retrieveJourneyPatternPointOnLines());
-    }
-
-    public List<Map.Entry<Integer, List<Integer>>> findTopTenLongestLines(Map<Integer, List<Integer>> lineStops) {
+    public List<Map.Entry<Integer, List<Integer>>> findTopTenLongestLines() {
+        log.info("Finding the top ten longest lines");
+        Map<Integer, List<Integer>> lineStops = retrieveJourneyPatternPointOnLines();
         List<Map.Entry<Integer, List<Integer>>> lineStopsMapEntriesArrayList = new ArrayList<>(lineStops.entrySet());
         lineStopsMapEntriesArrayList.sort((o1, o2) -> Integer.compare(o2.getValue().size(), o1.getValue().size()));
 
@@ -44,8 +42,9 @@ public class TrafiklabService {
     }
 
     public Map<Integer, List<Integer>> retrieveJourneyPatternPointOnLines() {
+        log.info("Retrieving JourneyPatternPointOnLines");
         Map<Integer, List<Integer>> journeyPatternPointOnLineHashMap = null;
-        ResponseEntity<JourneyPatternPointOnLineResponse> journeyPatternPointOnLineListResponse = trafiklabWebClient.get()
+        ResponseEntity<JourneyPatternPointOnLineResponse> journeyPatternPointOnLineResponse = trafiklabWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("key", trafiklabKey)
                         .queryParam("model", "jour")
@@ -54,11 +53,10 @@ public class TrafiklabService {
                 .retrieve()
                 .toEntity(JourneyPatternPointOnLineResponse.class)
                 .block();
-        HttpStatusCode statusCode = journeyPatternPointOnLineListResponse.getStatusCode();
+        HttpStatusCode statusCode = journeyPatternPointOnLineResponse.getStatusCode();
         if(statusCode.is2xxSuccessful()) {
-            log.info("journeyPatternPointOnLineListResponse.getBody().size() = {}", journeyPatternPointOnLineListResponse
-                    .getBody().responseData().result().size());
-            journeyPatternPointOnLineHashMap = journeyPatternPointOnLineListResponse
+            log.info("JourneyPatternPointOnLines successfully retrieved");
+            journeyPatternPointOnLineHashMap = journeyPatternPointOnLineResponse
                     .getBody().responseData().result()
                     .stream()
                     .collect(Collectors.toMap(entity -> entity.lineNumber(),
@@ -68,17 +66,18 @@ public class TrafiklabService {
                                 mergedList.addAll(newList);
                                 return mergedList;
                             }));
+            log.debug("Number of lines retrieved: {}", journeyPatternPointOnLineHashMap.size());
         } else {
             log.error("Journey pattern points on line could not be retrieved. Status code: {}, Error message: {}",
-                    journeyPatternPointOnLineListResponse.getStatusCode(),
-                    journeyPatternPointOnLineListResponse.getBody());
+                    journeyPatternPointOnLineResponse.getStatusCode(),
+                    journeyPatternPointOnLineResponse.getBody());
             exit(1);
         }
-        log.info("journeyPatternPointOnLineHashMap.size() = {}", journeyPatternPointOnLineHashMap.size());
         return journeyPatternPointOnLineHashMap;
     }
 
     public Map<Integer, String> retrieveStopPoints() {
+        log.info("Retrieving StopPoints");
         Map<Integer, String> stopPointHashMap = null;
         ResponseEntity<StopPointResponse> stopPointListResponse = trafiklabWebClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -90,16 +89,19 @@ public class TrafiklabService {
                 .block();
         HttpStatusCode statusCode = stopPointListResponse.getStatusCode();
         if(statusCode.is2xxSuccessful()) {
+            log.info("StopPoints successfully retrieved");
             stopPointHashMap = stopPointListResponse
                     .getBody().responseData().result()
                     .stream()
                     .collect(Collectors.toMap(entity -> entity.stopPointNumber(), entity -> entity.stopPointName()));
+            log.debug("Number of stops retrieved: {}", stopPointHashMap.size());
         } else {
             log.error("Stop points could not be retrieved. Status code: {}, Error message: {}",
                     stopPointListResponse.getStatusCode(),
                     stopPointListResponse.getBody());
             exit(1);
         }
+
         return stopPointHashMap;
     }
 }

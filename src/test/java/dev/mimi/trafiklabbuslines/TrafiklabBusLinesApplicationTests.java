@@ -42,7 +42,7 @@ class TrafiklabBusLinesApplicationTests {
 				.willReturn(aResponse()
 						.withBody(generateStopPointResponse())
 						.withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)));
-		var journeyPatternPointOnLines = underTest.getTopTenLongestLines();
+		var journeyPatternPointOnLines = underTest.findTopTenLongestLines();
 		assertEquals(10, journeyPatternPointOnLines.size());
 		assertEquals(20, journeyPatternPointOnLines.get(0).getValue().size());
 		assertEquals(11, journeyPatternPointOnLines.get(9).getValue().size());
